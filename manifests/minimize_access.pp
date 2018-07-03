@@ -27,11 +27,26 @@ class os_hardening::minimize_access (
 
   # remove write permissions from path folders ($PATH) for all regular users
   # this prevents changing any system-wide command from normal users
-  file { $folders:
-    ensure  => 'directory',
-    mode    => 'go-w',
-    recurse => true,
+  case $::operatingsystem {
+    'Debian': {
+      file { $folders:
+        ensure       => 'directory',
+        mode         => 'go-w',
+        recurse      => true,
+        recurselimit => '5',
+      }
+    }
+    default: {
+      file { $folders:
+        ensure       => 'directory',
+        mode         => 'go-w',
+        links        => 'follow',
+        recurse      => true,
+        recurselimit => '5',
+      }
+    }
   }
+
   # shadow must only be accessible to user root
   file { '/etc/shadow':
     ensure => file,
